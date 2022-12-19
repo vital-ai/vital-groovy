@@ -18,14 +18,14 @@
  */
 package org.codehaus.groovy.tools.stubgenerator
 
-import groovy.test.GroovyTestCase
-import com.thoughtworks.qdox.JavaDocBuilder
+import com.thoughtworks.qdox.JavaProjectBuilder
 import com.thoughtworks.qdox.model.JavaClass
+import groovy.test.GroovyTestCase
 import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.tools.javac.JavaAwareCompilationUnit
 
-import static groovy.io.FileType.*
+import static groovy.io.FileType.FILES
 
 /**
  * Base class for all the stub generator test samples.
@@ -59,7 +59,7 @@ abstract class StubTestCase extends GroovyTestCase {
 
     protected File sourceRootPath
 
-    protected JavaDocBuilder qdox = new JavaDocBuilder()
+    protected JavaProjectBuilder qdox = new JavaProjectBuilder()
 
     protected GroovyClassLoader loader
     protected CompilerConfiguration config = new CompilerConfiguration()

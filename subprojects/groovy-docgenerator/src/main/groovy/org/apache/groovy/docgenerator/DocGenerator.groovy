@@ -18,11 +18,11 @@
  */
 package org.apache.groovy.docgenerator
 
-import com.thoughtworks.qdox.JavaDocBuilder
+import com.thoughtworks.qdox.JavaProjectBuilder
 import com.thoughtworks.qdox.model.JavaClass
 import com.thoughtworks.qdox.model.JavaMethod
 import com.thoughtworks.qdox.model.JavaParameter
-import com.thoughtworks.qdox.model.Type
+import com.thoughtworks.qdox.model.JavaType
 import groovy.cli.internal.CliBuilderInternal
 import groovy.text.SimpleTemplateEngine
 import groovy.text.Template
@@ -59,7 +59,7 @@ class DocGenerator {
      * with its methods, javadoc comments and tags.
      */
     private static DocSource parseSource(List<File> sourceFiles) {
-        JavaDocBuilder builder = new JavaDocBuilder()
+        JavaProjectBuilder builder = new JavaProjectBuilder()
         sourceFiles.each {
             if (it.exists()) {
                 builder.addSource(it.newReader())
@@ -264,7 +264,7 @@ class DocGenerator {
     private static class DocSource {
         SortedSet<DocPackage> packages = new TreeSet<DocPackage>(SORT_KEY_COMPARATOR)
 
-        void add(Type type, JavaMethod javaMethod) {
+        void add(JavaType type, JavaMethod javaMethod) {
             DocType tempDocType = new DocType(type: type)
 
             DocPackage aPackage = packages.find { it.name == tempDocType.packageName }
@@ -287,7 +287,7 @@ class DocGenerator {
             def allTypes = allDocTypes.collectEntries{ [it.fullyQualifiedClassName, it] }
             allTypes.each { name, docType ->
                 if (name.startsWith('primitives-and-primitive-arrays')) return
-                Type next = docType.javaClass.superClass
+                JavaType next = docType.javaClass.superClass
                 while (next != null) {
                     if (allTypes.keySet().contains(next.value)) {
                         docType.inheritedMethods[allTypes[next.value]] = allTypes[next.value].docMethods
@@ -327,13 +327,14 @@ class DocGenerator {
     }
 
     private static class DocType {
-        private Type type
+        private JavaType type
         final String shortComment = "" // empty because cannot get a comment of JDK
         SortedSet<DocMethod> docMethods = new TreeSet<DocMethod>(SORT_KEY_COMPARATOR)
         Map<String, List<DocMethod>> inheritedMethods = new LinkedHashMap<String, List<DocMethod>>()
 
         JavaClass getJavaClass() {
-            type.javaClass
+            assert type instanceof JavaClass
+            return type
         }
 
         String getPackageName() {
@@ -359,7 +360,7 @@ class DocGenerator {
         }
 
         boolean isInterface() {
-            type.javaClass.isInterface()
+            javaClass.isInterface()
         }
 
         String getSortKey() {
