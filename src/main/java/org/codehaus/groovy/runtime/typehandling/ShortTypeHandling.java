@@ -65,6 +65,49 @@ public class ShortTypeHandling {
         if (object instanceof String || object instanceof GString) {
             return Enum.valueOf(type, object.toString());
         }
+        
+
+        /*
+         * Additions
+         */
+
+        if(DefaultTypeTransformation.isTruthEnum(type)) {
+
+            Integer truth = DefaultTypeTransformation.asTruth(object);
+
+            if(truth != null) {
+
+                return DefaultTypeTransformation.truthFromInteger(type, truth);
+
+            }
+
+            if(truth == null) {
+
+                Boolean bTruth = null;
+
+                if(object instanceof Boolean) {
+                    bTruth = ((Boolean)object).booleanValue();
+                } else {
+                    Boolean asBoolean = DefaultTypeTransformation.asBoolean(object);
+                    if(asBoolean != null) {
+                        bTruth = asBoolean.booleanValue();
+                    }
+                }
+
+                if(bTruth != null) {
+                    return DefaultTypeTransformation.truthFromBoolean(type, bTruth);
+                }
+
+            }
+
+        }
+
+        /*
+         * End Additions
+         */
+        
+        
+        
         throw new GroovyCastException(object, type);
     }
 
@@ -83,4 +126,9 @@ public class ShortTypeHandling {
             throw new GroovyCastException(text,char.class);
         }
     }
+    
+    
+    
+    
+    
 }
