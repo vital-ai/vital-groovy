@@ -194,8 +194,8 @@ public class DefaultTypeTransformation {
             return (Boolean) object;
         }
 
-        
-     // truth objects may be cast to boolean to (if not unknown)
+        // truth objects may be cast to boolean (if not unknown)
+        // how about MU?
         Integer asTruth = asTruth(object);
         if(asTruth != null) {
             int i = asTruth.intValue();
@@ -204,7 +204,7 @@ public class DefaultTypeTransformation {
         }
         
         
-        // if the object is not null and no Boolean, try to call an asBoolean() method on the object
+        // if the object is not null and not Boolean, try to call an asBoolean() method on the object
         return (Boolean) InvokerHelper.invokeMethod(object, "asBoolean", InvokerHelper.EMPTY_ARGS);
     }
 
@@ -260,9 +260,6 @@ public class DefaultTypeTransformation {
             }
         } catch (Exception e) {}
 
-
-        
-        
         return continueCastOnNumber(object, type);
     }
 
@@ -568,7 +565,7 @@ public class DefaultTypeTransformation {
     }
 
     
-//  /**
+    //  /**
     //   * Marker interface for classes which should override equality check
     //   * 
     //   *
@@ -584,7 +581,6 @@ public class DefaultTypeTransformation {
     //      Boolean equalsSemantically(SemanticEqualityAware other);
     //  }
 
-    
     private static int compareToWithEqualityCheck(Object left, Object right, boolean equalityCheckOnly, boolean semanticEquality) {
 
         if (left == right) {
@@ -628,12 +624,12 @@ public class DefaultTypeTransformation {
 
         if (left instanceof Comparable) {
 
-            //a special case for semantic equality, if both
+            // a special case for semantic equality, if both
             boolean leftConverted = false;
 
 
-        //try to convert left to number
-        //check if class provides toNumber zero args method
+        // try to convert left to number
+        // check if class provides toNumber zero args method
         try {
             Method asNumberMethod = left.getClass().getMethod("asNumber");
             if(Number.class.isAssignableFrom( asNumberMethod.getReturnType())) {
@@ -711,7 +707,7 @@ public class DefaultTypeTransformation {
                 castNumber = castToNumber(right);
             } catch(GroovyCastException e) {}
 
-//            if (right instanceof Character || right instanceof Number) {
+            // if (right instanceof Character || right instanceof Number) {
             if (castNumber != null) {
                 return DefaultGroovyMethods.compareTo((Number) left, castToNumber(right));
             }
@@ -730,7 +726,6 @@ public class DefaultTypeTransformation {
             if(rightAsDate != null) {
                 return leftAsDate.compareTo(rightAsDate);
             }
-
         }
         else if (left instanceof Character) {
             if (isValidCharacterString(right)) {
@@ -791,7 +786,7 @@ public class DefaultTypeTransformation {
 
             if(rightAsTruth != null) {
 
-                //compare boolean and truth
+                // compare boolean and truth
 
                 if(rightAsTruth.intValue() == 0) throw new RuntimeException("Cannot compare boolean to UNKNOWN truth value");
 
@@ -820,9 +815,7 @@ public class DefaultTypeTransformation {
                     if(leftAsTruth.intValue() == 0) throw new RuntimeException("Cannot compare UNKNOWN truth value to boolean");
 
                     rightAsTruth = rightAsBoolean.booleanValue() ? 1 : -1;
-
                 }
-
             }
 
             if(rightAsTruth != null) {
@@ -849,8 +842,6 @@ public class DefaultTypeTransformation {
                     right.getClass().getName(),
                     right));
 }
-
-
 
     /*
     
@@ -1300,9 +1291,10 @@ public class DefaultTypeTransformation {
 
     private static int compareTruth(int leftAsTruth, int rightAsTruth) {	
         return leftAsTruth == rightAsTruth ? 0 : -1;	
-//        if(leftAsTruth == 2 && rightAsTruth == 2) return 0;	
-//        return ( (leftAsTruth > 0 && rightAsTruth > 0) || (leftAsTruth < 0 && rightAsTruth < 0) || ( leftAsTruth == 0 && rightAsTruth == 0) ) ? 0 : -1;	
-    }	
+        // if(leftAsTruth == 2 && rightAsTruth == 2) return 0;	
+        // return ( (leftAsTruth > 0 && rightAsTruth > 0) || (leftAsTruth < 0 && rightAsTruth < 0) || ( leftAsTruth == 0 && rightAsTruth == 0) ) ? 0 : -1;	
+    }
+    
     public static boolean isTruthEnum(Class<? extends Enum> type) {	
         try {	
             Method asTruthMethod = type.getMethod("asTruth");	
@@ -1393,6 +1385,4 @@ public class DefaultTypeTransformation {
      * End Additions 
      */
     
-    
-
 }

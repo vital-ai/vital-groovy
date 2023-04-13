@@ -66,7 +66,6 @@ public class ShortTypeHandling {
             return Enum.valueOf(type, object.toString());
         }
         
-
         /*
          * Additions
          */
@@ -76,9 +75,7 @@ public class ShortTypeHandling {
             Integer truth = DefaultTypeTransformation.asTruth(object);
 
             if(truth != null) {
-
                 return DefaultTypeTransformation.truthFromInteger(type, truth);
-
             }
 
             if(truth == null) {
@@ -86,8 +83,10 @@ public class ShortTypeHandling {
                 Boolean bTruth = null;
 
                 if(object instanceof Boolean) {
+                	
                     bTruth = ((Boolean)object).booleanValue();
                 } else {
+                	
                     Boolean asBoolean = DefaultTypeTransformation.asBoolean(object);
                     if(asBoolean != null) {
                         bTruth = asBoolean.booleanValue();
@@ -97,16 +96,12 @@ public class ShortTypeHandling {
                 if(bTruth != null) {
                     return DefaultTypeTransformation.truthFromBoolean(type, bTruth);
                 }
-
             }
-
         }
 
         /*
          * End Additions
          */
-        
-        
         
         throw new GroovyCastException(object, type);
     }
