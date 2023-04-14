@@ -32,6 +32,8 @@ import org.codehaus.groovy.runtime.NullObject;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 import org.codehaus.groovy.runtime.StringGroovyMethods;
 
+import ai.vital.vitalsigns.datatype.Truth;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Array;
@@ -196,10 +198,15 @@ public class DefaultTypeTransformation {
 
         // truth objects may be cast to boolean (if not unknown)
         // how about MU?
+        
+       // check instanceof Truth instead?
+        
         Integer asTruth = asTruth(object);
         if(asTruth != null) {
             int i = asTruth.intValue();
             if(i == 0) throw new RuntimeException("Cannot cast truth UNKNOWN value to boolean");
+            if(i == 2) throw new RuntimeException("Cannot cast truth MU value to boolean");
+
             return i == 1;
         }
         
@@ -252,14 +259,26 @@ public class DefaultTypeTransformation {
         }
 
         
-        //check if class provides toDate zero args method
-        try {
-            Method asDateMethod = object.getClass().getMethod("asDate");
-            if(Date.class.isAssignableFrom( asDateMethod.getReturnType())) {
-                return (Date) asDateMethod.invoke(object);
-            }
-        } catch (Exception e) {}
-
+        
+       
+        
+        if(type == Date.class) {
+        
+        	try {
+        		
+        		// check if class provides toDate zero args method
+        		
+        		Method asDateMethod = object.getClass().getMethod("asDate");
+        		
+        		if(Date.class.isAssignableFrom( asDateMethod.getReturnType())) {
+        			return (Date) asDateMethod.invoke(object);
+        		}
+        		
+        
+        	} catch (Exception e) {}       
+        }
+        
+        
         return continueCastOnNumber(object, type);
     }
 
@@ -1272,7 +1291,7 @@ public class DefaultTypeTransformation {
         return valAsTruth;	
 
     }
-
+    
     static Boolean asBoolean(Object v) {
 
         Boolean b = null;
@@ -1288,7 +1307,7 @@ public class DefaultTypeTransformation {
         return b;
 
     }
-
+    
     private static int compareTruth(int leftAsTruth, int rightAsTruth) {	
         return leftAsTruth == rightAsTruth ? 0 : -1;	
         // if(leftAsTruth == 2 && rightAsTruth == 2) return 0;	
@@ -1334,7 +1353,7 @@ public class DefaultTypeTransformation {
         } catch(Exception e) {}	
         return false;	
     }
-
+    
     public static Enum truthFromInteger(Class<? extends Enum> type,	
             Integer truth) {	
         Method fromInteger = null;	
