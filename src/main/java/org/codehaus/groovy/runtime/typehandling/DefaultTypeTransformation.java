@@ -258,26 +258,19 @@ public class DefaultTypeTransformation {
             return castToPrimitive(object, type);
         }
 
-        
-        
-       
-        
         if(type == Date.class) {
         
         	try {
         		
-        		// check if class provides toDate zero args method
-        		
+        		// check if class provides toDate zero args method		
         		Method asDateMethod = object.getClass().getMethod("asDate");
         		
         		if(Date.class.isAssignableFrom( asDateMethod.getReturnType())) {
         			return (Date) asDateMethod.invoke(object);
         		}
         		
-        
         	} catch (Exception e) {}       
         }
-        
         
         return continueCastOnNumber(object, type);
     }
@@ -583,23 +576,6 @@ public class DefaultTypeTransformation {
         return compareToWithEqualityCheck(left, right, false, true);
     }
 
-    
-    //  /**
-    //   * Marker interface for classes which should override equality check
-    //   * 
-    //   *
-    //   */
-    //  public static interface SemanticEqualityAware {
-    //      
-    //      /**
-    //       * Returns true/false if the equality can be determined, <code>null</code> if it should
-    //       * fall back to default implementation
-    //       * @param other
-    //       * @return
-    //       */
-    //      Boolean equalsSemantically(SemanticEqualityAware other);
-    //  }
-
     private static int compareToWithEqualityCheck(Object left, Object right, boolean equalityCheckOnly, boolean semanticEquality) {
 
         if (left == right) {
@@ -612,6 +588,9 @@ public class DefaultTypeTransformation {
             return 1;
         }
 
+        
+        // don't use semantic equality check
+        /*
         if(equalityCheckOnly && semanticEquality) {
 
         	// && left instanceof SemanticEqualityAware && right instanceof SemanticEqualityAware)
@@ -640,7 +619,10 @@ public class DefaultTypeTransformation {
                 }
             }
         }
-
+         */
+        
+        
+        
         if (left instanceof Comparable) {
 
             // a special case for semantic equality, if both
@@ -809,6 +791,9 @@ public class DefaultTypeTransformation {
 
                 if(rightAsTruth.intValue() == 0) throw new RuntimeException("Cannot compare boolean to UNKNOWN truth value");
 
+                if(rightAsTruth.intValue() == 2) throw new RuntimeException("Cannot compare boolean to MU truth value");
+
+                
                 leftAsTruth = leftAsBoolean.booleanValue() ? 1 : -1;
 
                 return compareTruth(leftAsTruth, rightAsTruth);
@@ -833,6 +818,9 @@ public class DefaultTypeTransformation {
 
                     if(leftAsTruth.intValue() == 0) throw new RuntimeException("Cannot compare UNKNOWN truth value to boolean");
 
+                    if(leftAsTruth.intValue() == 2) throw new RuntimeException("Cannot compare MU truth value to boolean");
+
+                    
                     rightAsTruth = rightAsBoolean.booleanValue() ? 1 : -1;
                 }
             }
@@ -862,78 +850,6 @@ public class DefaultTypeTransformation {
                     right));
 }
 
-    /*
-    
-    private static int compareToWithEqualityCheck(Object left, Object right, boolean equalityCheckOnly) {
-        Exception cause = null;
-        if (left == right) {
-            return 0;
-        }
-        if (left == null) {
-            return -1;
-        } else if (right == null) {
-            return 1;
-        }
-        if (left instanceof Comparable || left instanceof Number) {
-            if (left instanceof Number) {
-                if (right instanceof Character || right instanceof Number) {
-                    return DefaultGroovyMethods.compareTo((Number) left, castToNumber(right));
-                }
-                if (isValidCharacterString(right)) {
-                    return DefaultGroovyMethods.compareTo((Number) left, ShortTypeHandling.castToChar(right));
-                }
-            } else if (left instanceof Character) {
-                if (isValidCharacterString(right)) {
-                    return DefaultGroovyMethods.compareTo((Character) left, ShortTypeHandling.castToChar(right));
-                }
-                if (right instanceof Number) {
-                    return DefaultGroovyMethods.compareTo((Character) left, (Number) right);
-                }
-                if (right instanceof String) {
-                    return (left.toString()).compareTo((String) right);
-                }
-                if (right instanceof GString) {
-                    return (left.toString()).compareTo(right.toString());
-                }
-            } else if (right instanceof Number) {
-                if (isValidCharacterString(left)) {
-                    return DefaultGroovyMethods.compareTo(ShortTypeHandling.castToChar(left), (Number) right);
-                }
-            } else if (left instanceof String && right instanceof Character) {
-                return ((String) left).compareTo(right.toString());
-            } else if (left instanceof String && right instanceof GString) {
-                return ((String) left).compareTo(right.toString());
-            } else if (left instanceof GString && right instanceof String) {
-                return ((GString) left).compareTo(right);
-            }
-            if (!equalityCheckOnly || left.getClass().isAssignableFrom(right.getClass())
-                    || (right.getClass() != Object.class && right.getClass().isAssignableFrom(left.getClass()) //GROOVY-4046
-                    || right instanceof Comparable) // GROOVY-7954
-            ) {
-                // GROOVY-7876: when comparing for equality we try to only call compareTo when an assignable
-                // relationship holds but with a container/holder class and because of erasure, we might still end
-                // up with the prospect of a ClassCastException which we want to ignore but only if testing equality
-                try {
-                    // GROOVY-9711: don't rely on Java method selection
-                    return (int) InvokerHelper.invokeMethod(left, "compareTo", right);
-                } catch (ClassCastException cce) {
-                    if (!equalityCheckOnly) cause = cce;
-                }
-            }
-        }
-
-        if (equalityCheckOnly) {
-            return -1; // anything other than 0
-        }
-        String message = MessageFormat.format("Cannot compare {0} with value ''{1}'' and {2} with value ''{3}''",
-                left.getClass().getName(), left, right.getClass().getName(), right);
-        if (cause != null) {
-            throw new IllegalArgumentException(message, cause);
-        } else {
-            throw new IllegalArgumentException(message);
-        }
-    }
-*/
     
     public static boolean compareEqual(Object left, Object right) {
         return compareEqual(left, right, true);
@@ -980,49 +896,6 @@ public class DefaultTypeTransformation {
         }
         return ((Boolean) InvokerHelper.invokeMethod(left, "equals", right)).booleanValue();
     }
-
-    /*
-    public static boolean compareEqual(Object left, Object right) {
-        if (left == right) return true;
-        if (left == null) return right instanceof NullObject;
-        if (right == null) return left instanceof NullObject;
-        if (left instanceof Comparable) {
-            return compareToWithEqualityCheck(left, right, true) == 0;
-        }
-        // handle arrays on both sides as special case for efficiency
-        Class leftClass = left.getClass();
-        Class rightClass = right.getClass();
-        if (leftClass.isArray() && rightClass.isArray()) {
-            return compareArrayEqual(left, right);
-        }
-        if (leftClass.isArray() && leftClass.getComponentType().isPrimitive()) {
-            left = primitiveArrayToList(left);
-        }
-        if (rightClass.isArray() && rightClass.getComponentType().isPrimitive()) {
-            right = primitiveArrayToList(right);
-        }
-        if (left instanceof Object[] && right instanceof List) {
-            return DefaultGroovyMethods.equals((Object[]) left, (List) right);
-        }
-        if (left instanceof List && right instanceof Object[]) {
-            return DefaultGroovyMethods.equals((List) left, (Object[]) right);
-        }
-        if (left instanceof List && right instanceof List) {
-            return DefaultGroovyMethods.equals((List) left, (List) right);
-        }
-        if (left instanceof Map.Entry && right instanceof Map.Entry) {
-            Object k1 = ((Map.Entry) left).getKey();
-            Object k2 = ((Map.Entry) right).getKey();
-            if (Objects.equals(k1, k2)) {
-                Object v1 = ((Map.Entry) left).getValue();
-                Object v2 = ((Map.Entry) right).getValue();
-                return v1 == v2 || (v1 != null && DefaultTypeTransformation.compareEqual(v1, v2));
-            }
-            return false;
-        }
-        return (Boolean) InvokerHelper.invokeMethod(left, "equals", right);
-    }
-*/
     
     public static boolean compareArrayEqual(Object left, Object right) {
         if (left == null) {
@@ -1305,99 +1178,54 @@ public class DefaultTypeTransformation {
         } catch(Exception e) {}
 
         return b;
-
     }
     
     private static int compareTruth(int leftAsTruth, int rightAsTruth) {	
         return leftAsTruth == rightAsTruth ? 0 : -1;	
-        // if(leftAsTruth == 2 && rightAsTruth == 2) return 0;	
-        // return ( (leftAsTruth > 0 && rightAsTruth > 0) || (leftAsTruth < 0 && rightAsTruth < 0) || ( leftAsTruth == 0 && rightAsTruth == 0) ) ? 0 : -1;	
     }
     
-    public static boolean isTruthEnum(Class<? extends Enum> type) {	
-        try {	
-            Method asTruthMethod = type.getMethod("asTruth");	
-            Class<?> returnType = asTruthMethod.getReturnType();	
-            if(Integer.class.isAssignableFrom(returnType) || int.class.isAssignableFrom(returnType)) {	
-
-                Method fromBoolean = null;	
-                try {	
-                    fromBoolean = type.getMethod("fromBoolean", Boolean.class);	
-                    if(!Modifier.isStatic(fromBoolean.getModifiers())) {	
-                        throw new RuntimeException("Truth enum fromBoolean method must be static: " + type);	
-                    }	
-                    if( fromBoolean.getReturnType() != type ) {	
-                        throw new RuntimeException("Truth enum fromBoolean method must return this enum instance: " + type);	
-                    }	
-                }catch(Exception e) {	
-                    if(fromBoolean == null) throw new RuntimeException("Truth enum must have static fromBoolean method: " + type);	
-                    throw new RuntimeException(e);	
-                }
-
-                Method fromInteger = null;	
-                try {	
-                    fromInteger = type.getMethod("fromInteger", Integer.class);	
-                    if(!Modifier.isStatic(fromInteger.getModifiers())) {	
-                        throw new RuntimeException("Truth enum fromInteger method must be static: " + type);	
-                    }	
-                    if( fromInteger.getReturnType() != type ) {	
-                        throw new RuntimeException("Truth enum fromInteger method must return this enum instance: " + type);	
-                    }	
-                } catch(Exception e) {	
-                    if(fromInteger == null) throw new RuntimeException("Truth enum must have static fromInteger method: " + type);	
-                    throw new RuntimeException(e);	
-                }	
-
-                return true;	
-            }	
-        } catch(Exception e) {}	
-        return false;	
+    public static Truth truthFromInteger( Integer truthInteger) {
+    	
+    	if(truthInteger == -1) {
+    		
+    		return Truth.NO;
+    	}
+    	
+    	if(truthInteger == 0) {
+    		
+    		return Truth.UNKNOWN;
+    	}
+    	
+    	if(truthInteger == 1) {
+    		
+    		return Truth.YES;
+    	}
+    	
+    	if(truthInteger == 2) {
+    		
+    		return Truth.MU;
+    	}
+    	
+    	throw new RuntimeException("Truth integer enum must be one of: [-1,0,1,2]");	
+    	
     }
+
+    public static Truth truthFromBoolean( Boolean bTruth) {
+    	
+    	if(bTruth == null) {
+    		
+    		throw new RuntimeException("Truth cannot be set by a null Boolean value.");	
+    	}
     
-    public static Enum truthFromInteger(Class<? extends Enum> type,	
-            Integer truth) {	
-        Method fromInteger = null;	
-        try {	
-            fromInteger = type.getMethod("fromInteger", Integer.class);	
-            if(!Modifier.isStatic(fromInteger.getModifiers())) {	
-                throw new RuntimeException("Truth enum fromInteger method must be static: " + type);	
-            }	
-            if( fromInteger.getReturnType() != type ) {	
-                throw new RuntimeException("Truth enum fromInteger method must return this enum instance: " + type);	
-            }	
-        } catch(Exception e) {	
-            if(fromInteger == null) throw new RuntimeException("Truth enum must have static fromInteger method: " + type);	
-            throw new RuntimeException(e);	
-        }	
-
-        try {	
-            return (Enum) fromInteger.invoke(null, truth);	
-        } catch (Exception e) {	
-            throw new RuntimeException(e);	
-        }	  	
-    }
-
-    public static Enum truthFromBoolean(Class<? extends Enum> type,	
-            Boolean bTruth) {	
-        Method fromBoolean = null;	
-        try {	
-            fromBoolean = type.getMethod("fromBoolean", Boolean.class);	
-            if(!Modifier.isStatic(fromBoolean.getModifiers())) {	
-                throw new RuntimeException("Truth enum fromBoolean method must be static: " + type);	
-            }	
-            if( fromBoolean.getReturnType() != type ) {	
-                throw new RuntimeException("Truth enum fromBoolean method must return this enum instance: " + type);	
-            }	
-        }catch(Exception e) {	
-            if(fromBoolean == null) throw new RuntimeException("Truth enum must have static fromBoolean method: " + type);	
-            throw new RuntimeException(e);	
-        }	
-
-        try {	
-            return (Enum) fromBoolean.invoke(null, bTruth);	
-        } catch (Exception e) {	
-            throw new RuntimeException(e);	
-        }	
+    	if(bTruth == true) {
+    		
+    		return Truth.YES;
+    		
+    	}
+    	else {
+    		
+    		return Truth.NO;
+    	}	
     }
 
     /*

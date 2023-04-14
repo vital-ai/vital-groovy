@@ -22,6 +22,8 @@ import groovy.lang.GString;
 
 import java.util.Arrays;
 
+import ai.vital.vitalsigns.datatype.Truth;
+
 /**
  * Class providing various short paths for type conversions. Read the comments
  * to what conditions have to be met to get valid results!
@@ -70,12 +72,12 @@ public class ShortTypeHandling {
          * Additions
          */
 
-        if(DefaultTypeTransformation.isTruthEnum(type)) {
-
+        if(type == Truth.class) {
+        	
             Integer truth = DefaultTypeTransformation.asTruth(object);
-
+            
             if(truth != null) {
-                return DefaultTypeTransformation.truthFromInteger(type, truth);
+                return DefaultTypeTransformation.truthFromInteger(truth);
             }
 
             if(truth == null) {
@@ -85,20 +87,22 @@ public class ShortTypeHandling {
                 if(object instanceof Boolean) {
                 	
                     bTruth = ((Boolean)object).booleanValue();
+                    
                 } else {
                 	
                     Boolean asBoolean = DefaultTypeTransformation.asBoolean(object);
+                    
                     if(asBoolean != null) {
                         bTruth = asBoolean.booleanValue();
                     }
                 }
 
                 if(bTruth != null) {
-                    return DefaultTypeTransformation.truthFromBoolean(type, bTruth);
+                    return DefaultTypeTransformation.truthFromBoolean(bTruth);
                 }
             }
         }
-
+        
         /*
          * End Additions
          */
@@ -121,9 +125,5 @@ public class ShortTypeHandling {
             throw new GroovyCastException(text,char.class);
         }
     }
-    
-    
-    
-    
-    
+ 
 }
